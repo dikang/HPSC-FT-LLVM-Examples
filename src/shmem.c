@@ -9,8 +9,8 @@
 
 char * data_arr;
 char * ctrl_arr;
-int data_shmid;
-int ctrl_shmid;
+static int data_shmid;
+static int ctrl_shmid;
 char * shmdatav;
 char * shmdatac[MAX_NMR];
 

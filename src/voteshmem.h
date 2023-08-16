@@ -45,8 +45,6 @@ typedef struct {
 
 extern char * data_arr;
 extern char * ctrl_arr;
-extern int data_shmid;
-extern int ctrl_shmid;
 
 extern char * shmdatav;
 extern char * shmdatac[MAX_NMR];

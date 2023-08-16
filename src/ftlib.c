@@ -34,8 +34,8 @@ int ft_init() {
     return nmr_id;
 }
 
-void ft_exit(int id) {
-    shmem_exit();
+void ft_exit() {
+//    shmem_exit();
 }
 
 static inline void __ft_copy(void * varaddr, int size) {

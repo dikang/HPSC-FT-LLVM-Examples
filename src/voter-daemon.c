@@ -35,7 +35,12 @@ int main(int argc, char const *argv[]) {
 
     while(1) {
         for (int i = 0; i < no_cores; i++) {
-            while(cbcptr[i]->seq_no != seq_no) usleep(5);
+            while(cbcptr[i]->seq_no != seq_no) {
+                usleep(5);
+                if (cbvptr->num_ranks == 0) {
+                    return 0;
+                }
+        }
             cbcptr[i]->vote_result = VOTE_RESULT_UNKNOWN;
         }
         printf_debug("Voter: %d got all from (%d) clients\n", no_cores);
@@ -95,6 +100,5 @@ int main(int argc, char const *argv[]) {
         cbvptr->data_seq = seq_no;
         usleep(5);
     }
-    shmem_exit();
-    return 0;
+//    shmem_exit();
 }

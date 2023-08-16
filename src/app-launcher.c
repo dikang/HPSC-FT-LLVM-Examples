@@ -19,7 +19,7 @@ void spawn_voter(int nmr, pid_t *pids, char * voter_binary) {
         char *args[] = {voter_name, nmr_string, NULL};
         execvp(voter_name, args);
     } else {
-        pids[0] = pid;
+        pids[nmr] = pid;
     }
 }
 
@@ -41,7 +41,7 @@ void spawn_app(int nmr, pid_t * pids, char * binary_name) {
             exit(EXIT_FAILURE);
         } else {
             // Parent process
-            pids[i+1] = pid;
+            pids[i] = pid;
             cbvptr->pids[i] = pid;	// initialize control_block_voter's pids table
         }
     }
@@ -70,8 +70,9 @@ int main(int argc, char ** argv) {
     
     int status;
     for (i = 0; i < N; i++) {
-        waitpid(pids[i+1], &status, 0); // Wait for the child process to finish
+        waitpid(pids[i], &status, 0); // Wait for the child process to finish
     }
+    cbvptr->num_ranks = 0; 
     waitpid(pids[N], &status, 0);
     shmem_exit();
     return 0;
