@@ -13,8 +13,6 @@
 #include "ft.h"
 
 #define DATA_SIZE 1024
-#define LOOP_COUNT 10
-#define ERROR_MODULO 3
 
 int b[DATA_SIZE];
 int main(int argc, char ** argv)
@@ -34,11 +32,11 @@ int main(int argc, char ** argv)
  
     for (i = 0; i < DATA_SIZE; i++) b[i] = i;		// initialization of b[]
 
-    for (count = 1; count <= LOOP_COUNT; count++ ) {
+    for (count = 1; count <= 10; count++ ) {
       if (core_id == 0) 
           printf("  --- iteration (%d)\n", count);
 
-      if (count % ERROR_MODULO  == 0 && core_id == 1) c[count]++;	// error injection on 'b[3,6,9]' through c
+      if (count % 3  == 0 && core_id == 1) c[count]++;	// error injection on 'b[3,6,9]' through c for Client_1
 
       #pragma ft nmr lhs(a) rhs(b)
       {
@@ -48,7 +46,7 @@ int main(int argc, char ** argv)
             a = b[count];		
       }
 
-      if (count % 3 == 0 && core_id == 1) a++;	// error injection on a, which will corrupt b[0..1] below.
+      if (count % 3 == 0 && core_id == 1) a++;	// error injection on a, which will corrupt b[0..1] below for Client_1
 
       b[0] = a;
       b[1] = a+1;
@@ -60,6 +58,6 @@ int main(int argc, char ** argv)
     if (core_id != 1) 
        printf("Client %d: exits. It must have 0 errors.\n", core_id);
     else
-       printf("Client %d: exits. It must have %d occurrences of recoverable errors.\n", core_id, (int)LOOP_COUNT/ERROR_MODULO*2);
+       printf("Client %d: exits. It must have %d occurrences of recoverable errors.\n", core_id, (int)10/3*2);
     return 0;
 }

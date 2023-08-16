@@ -59,8 +59,8 @@ $ ./app-launcher 3 ./vote-client ./voter-daemon
   --- iteration (2)
   --- iteration (3)
 Client 1: Recoverable error with (1) errors in (4) bytes
-Client 1: Recoverable error with (2) errors in (8) bytes
   --- iteration (4)
+Client 1: Recoverable error with (2) errors in (8) bytes
   --- iteration (5)
   --- iteration (6)
 Client 1: Recoverable error with (1) errors in (4) bytes
@@ -69,21 +69,24 @@ Client 1: Recoverable error with (2) errors in (8) bytes
   --- iteration (8)
   --- iteration (9)
 Client 1: Recoverable error with (1) errors in (4) bytes
-Client 1: Recoverable error with (2) errors in (8) bytes
   --- iteration (10)
+Client 1: Recoverable error with (2) errors in (8) bytes
+Client 0: exits. It must have 0 errors.
+Client 1: exits. It must have 6 occurrences of recoverable errors.
+Client 2: exits. It must have 0 errors.
 ```
 
 `Recoverable errors with (1) error in (4) bytes` is reported by the first pragma `#pragma ft nmr rhs(b)`, because of the errors injected in the following line.
 
 ```cpp
-    if (count % 3 == 0 && core_id == 1) c[count]++;    // error injection on 'b[3,6,9]' through c
+      if (count % 3  == 0 && core_id == 1) c[count]++;  // error injection on 'b[3,6,9]' through c for Client_1
 ```
 
 `Recoverable error with (2) errors in (8) bytes` is reported by the second pragma `#pragma ft vote(b:sizeof(int)*2)`, which votes the first elements of array `b`.
 Two errors are injected on `b[0]` and `b[1]` in the following lines.
 
 ```cpp
-      if (count % 3 == 0 && core_id == 1) a++;  // error injection on a, which will corrupt b[0..1] below.
+      if (count % 3 == 0 && core_id == 1) a++;  // error injection on a, which will corrupt b[0..1] below for Client_1
 
       b[0] = a;
       b[1] = a+1;
