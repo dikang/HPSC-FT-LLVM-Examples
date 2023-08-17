@@ -49,6 +49,15 @@ void spawn_app(int nmr, pid_t * pids, char * binary_name) {
     cbvptr->num_ranks = nmr;
 }
 
+int test_file(char * fname) {
+    FILE * file = fopen(fname, "r");
+    if (!file) {
+        printf("Error: %s file doesn't exist\n", fname);
+        exit(0);
+    }
+    fclose(file);
+}
+
 int main(int argc, char ** argv) {
     int i;
     pid_t pids[MAX_NMR+1];
@@ -60,6 +69,9 @@ int main(int argc, char ** argv) {
 
     int  N = atoi(argv[1]);
     char *binary_name = argv[2];
+
+    for (i = 2; i <= 3; i++)
+        test_file(argv[i]);
 
     shmem_init();
     cbvptr->num_ranks = 0;	// not ready for voting. voter needs to set it up.

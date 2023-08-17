@@ -109,9 +109,7 @@ int32_t __ft_vote_debug(void * varaddr, const int32_t varsize, void * strptr, co
    int32_t result;
 
    if (strptr != NULL) {
-     printf("vote: \"%s\" at line(%d) - addr (%p), size(%d)\n", (char*)strptr, loc, varaddr, varsize);
-     if (nmr_id == 0) printf_debug(".");
-     if (nmr_id == 1) printf_debug("-");
+     printf("rank %d: vote: \"%s\" at line(%d) - addr (%p), size(%d)\n", nmr_id, (char*)strptr, loc, varaddr, varsize);
      usleep(nmr_id * 10);
    }
    __ft_copy_and_vote(varaddr, varsize, &num_errors, &result);

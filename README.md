@@ -39,9 +39,11 @@ It will generate the following binaries:
 ```bash
 app-launcher  		// launcher for both voter and client programs (for x86)
 vote-client  		// client program running in NMR (N-modular reduncancy) fashion (for x86)
+vote-client-debug 	// client program running in NMR (N-modular reduncancy) fashion (for x86) with additional debugging message
 voter-daemon   		// software voter (for x86)
 app-launcher-riscv 	// (for riscv) 
 vote-client-riscv  	// (for riscv)
+vote-client-debug-riscv // (for riscv)
 voter-daemon-riscv	// (for riscv)
 ```
 
@@ -49,7 +51,8 @@ voter-daemon-riscv	// (for riscv)
 
 `app-launcher` launches both voter daemon and clients. Here is an example to run the client in TMR (Triple modular redundancy). The first argument of `app-launcher` determines how many copies of the clients will run.
 The `vote-client` program has built-in error injection, which will cause report errors from `voter-daemon`.
-
+The following examples are run on a X86 host machine and also on a RISCV Qemu instance.
+You need to change the names of the executables (attach `-riscv` at the end of the file names) to run the examples on a RISCV Qemu instance.
 ```bash
 $ ./app-launcher
 uage: app-launcher <number of processes> <path of the executable> <path of the voter binary>
@@ -92,3 +95,55 @@ Two errors are injected on `b[0]` and `b[1]` in the following lines.
       b[1] = a+1;
 ```
 
+To provide more information of how the compiler translates HPSC FT pragmas, we provide `debugging` mode.
+It is enabled when the source is compiled with `-fft-debug-mode` in addition to `-fft`, which is shown in `src/Makefile`.
+In debugging mode, additional outputs are displayed showing the name and location of the variable which is voted.
+In the `src` directory, you will see `voter-client-debug` and `voter-client-debug-riscv` executables. 
+They are compiled in debugging mode for HPSC FT pragmas.
+When you run it, it'll print variable names and the corresponding line number in the source code, which is shown below.
+
+```cpp
+$ ./app-launcher 1 ./vote-client-debug ./voter-daemon
+  --- iteration (1)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130d4), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (2)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130d8), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (3)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130dc), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (4)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130e0), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (5)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130e4), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (6)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130e8), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (7)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130ec), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (8)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130f0), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (9)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130f4), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+  --- iteration (10)
+rank 0: vote: "b" at line(46) - addr (0x55bbf8e130f8), size(4)
+rank 0: vote: "a" at line(46) - addr (0x7ffe427d07fc), size(4)
+rank 0: vote: "b" at line(55) - addr (0x55bbf8e130d0), size(8)
+Client 0: exits. It must have 0 errors.
+```
+ 
