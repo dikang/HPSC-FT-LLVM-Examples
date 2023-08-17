@@ -223,7 +223,7 @@ Compiler generates llvm intermediate representation (IR) code with `-S -emit-llv
 If the compiler cannot find `ft.h` file, its installation is not properly done.
 This tutorial has a copy of `ft.h` file.
 
-`-fft-debug-mode` option enables printout showing which variable and where it is voted in the source code.
+`-fft-debug-mode` option enables printout showing which variable and where it is voted in the source code at run-time.
 
 ```bash
 $ clang -fft -S -emit-llvm test.c -o test.ll
