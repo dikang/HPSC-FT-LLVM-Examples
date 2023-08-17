@@ -221,7 +221,9 @@ You can compile it using the following command.
 `-fft` option enables proper linking of necessary libraries at link time, which is not needed for this demo.
 Compiler generates llvm intermediate representation (IR) code with `-S -emit-llvm` options.
 If the compiler cannot find `ft.h` file, its installation is not properly done.
-This tutorial has a copy of `ft.h` file. You can use it instead by modifying `<ft.h>` to `"ft.h"` in the `test.c` file.
+This tutorial has a copy of `ft.h` file.
+
+`-fft-debug-mode` option enables printout showing which variable and where it is voted in the source code.
 
 ```bash
 $ clang -fft -S -emit-llvm test.c -o test.ll
