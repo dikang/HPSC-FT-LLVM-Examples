@@ -6,7 +6,8 @@ If you want to build and run the examples with software voter daemon provided, p
 
 - [HPSC FT Directives](#hpscdirectives)
 - [HPSC FT Clauses](#hpscclauses)
-- [A Quick Demo](#quickdemo)
+- [A Simple Demo](#quickdemo)
+- [Note on compiler optimization and performance](#performance)
 
 HPSC FT LLVM Extension provides a set of C pragma with which Clang inserts voting routines automatically.
 
@@ -291,3 +292,58 @@ It is functionally equivalent to `@__ft_voter()` and `@__ft_votel()`, but its na
     %12 = call i32 @__ft_votenow(ptr %11, i32 4096)	// <-- from #pragma ft vote(data:sizeof(int)*1024)
     %call2 = call i32 (...) @ft_exit()
 ```
+
+## <a name="performance"></a> Note on compiler optimization and performance
+
+The user needs to be aware of the interactions between HPSC FT pragmas and the compiler optimization to get the best performance.
+HPSC FT LLVM inserts vote functions when load/store happens in the program. Those vote functions may affect the compiler in generating code. As an example, compiler optimizes temporary variables using registers, which saves execution time for load/store of those variables. However, if a user puts HPSC FT pragma to vote for a temporary variable, it forces the compiler to load/store the variable. It may end up performance loss. The following two example show the difference. In the following example, the loop variable `i` is to be voted. The compiler creates load/store instruction for the loop variable.
+
+```cpp
+  #pragma ft nmr rhs(i) lhs(j)			// vote when variable i is loaded, and variable j is stored
+  {
+  for (i = 0; i < 1000; i++) {
+    j += i;
+  }
+  }
+  --> translated by HPSC LLVM Compiler
+  %i = alloca i32, align 4				// <-- 'i' is given a storage
+  ...
+  store i32 0, ptr %i, align 4, !tbaa !5
+  %0 = call i32 @__ft_voter(ptr nonnull %i, i32 4) #2	// <-- from # pragma ft rhs(i)
+  %1 = load i32, ptr %i, align 4, !tbaa !5
+  ...
+
+for.body:              ; preds = %entry, %for.body
+  %2 = call i32 @__ft_voter(ptr nonnull %i, i32 4) #2	// <-- from # pragma ft rhs(i)
+  %3 = load i32, ptr %i, align 4, !tbaa !5
+  ...
+  store i32 %add, ptr %j, align 4, !tbaa !5
+  %5 = call i32 @__ft_votel(ptr nonnull %j, i32 4) #2	// <-- from # pragma ft lhs(j)
+  %6 = call i32 @__ft_voter(ptr nonnull %i, i32 4) #2	// <-- from # pragma ft rhs(i)
+  %7 = load i32, ptr %i, align 4, !tbaa !5
+  %inc = add nsw i32 %7, 1
+  store i32 %inc, ptr %i, align 4, !tbaa !5
+  %8 = call i32 @__ft_voter(ptr nonnull %i, i32 4) #2	// <-- from # pragma ft rhs(i)
+  %9 = load i32, ptr %i, align 4, !tbaa !5
+  %cmp = icmp slt i32 %9, 1000
+  br i1 %cmp, label %for.body, label %for.end, !llvm.loop !9
+```
+
+In the following example, the loop variable `i` is not to be voted. The compiler does not create load/store instruction for the loop variable, which may result in faster execution.
+
+```cpp
+  #pragma ft nmr lhs(j)			// vote when variable j is stored
+  for (i = 0; i < 1000; i++) {
+    j += i;
+  }
+  --> translated by HPSC LLVM Compiler
+  %i.03 = phi i32 [ 0, %entry ], [ %inc, %for.body ]	// <-- 'i' is given a register without load/store
+  %0 = load i32, ptr %j, align 4, !tbaa !5
+  %add = add nsw i32 %0, %i.03
+  store i32 %add, ptr %j, align 4, !tbaa !5
+  %1 = call i32 @__ft_votel(ptr nonnull %j, i32 4) #2	// <-- from # pragma ft lhs(j)
+  %inc = add nuw nsw i32 %i.03, 1
+  %exitcond.not = icmp eq i32 %inc, 1000
+  br i1 %exitcond.not, label %for.end, label %for.body, !llvm.loop !9
+```
+
